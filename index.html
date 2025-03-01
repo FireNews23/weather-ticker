@@ -52,21 +52,30 @@
             .then(data => {
                 let alerts = data.features;
                 let alertText = 'No active alerts.';
-                
-                if (alerts.length > 0) {
-                    alertText = '⚠️ Active Alerts: ';
-                    alerts.forEach(alert => {
+
+                // Filter for specific alert types (Severe Thunderstorm, Tornado Warnings, Tornado Emergencies)
+                let filteredAlerts = alerts.filter(alert => {
+                    return (
+                        alert.properties.event === 'Severe Thunderstorm Warning' ||
+                        alert.properties.event === 'Tornado Warning' ||
+                        alert.properties.event === 'Tornado Emergency'
+                    );
+                });
+
+                if (filteredAlerts.length > 0) {
+                    alertText = '⚠️ Severe Alerts: ';
+                    filteredAlerts.forEach(alert => {
                         alertText += `${alert.properties.headline} | `;
                     });
 
                     // Add alert class to apply special styling
                     document.getElementById('ticker').classList.add('alert');
                 } else {
-                    // Remove alert class if there are no active alerts
+                    // Remove alert class if there are no matching alerts
                     document.getElementById('ticker').classList.remove('alert');
                 }
 
-                // Update the ticker with alerts
+                // Update the ticker with filtered alerts
                 document.getElementById('ticker').textContent = alertText;
             })
             .catch(error => {
