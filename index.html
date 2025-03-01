@@ -70,58 +70,66 @@
     </div>
 
     <script>
-        // Fetch severe weather alerts
-        fetch('https://api.weather.gov/alerts/active')
-            .then(response => response.json())
-            .then(data => {
-                let alerts = data.features;
-                let alertText = 'No active alerts.';
+        // Function to fetch and update weather alerts
+        function updateAlerts() {
+            fetch('https://api.weather.gov/alerts/active')
+                .then(response => response.json())
+                .then(data => {
+                    let alerts = data.features;
+                    let alertText = 'No active alerts.';
 
-                // Filter for specific alert types (Severe Thunderstorm, Tornado Warnings, Tornado Emergencies)
-                let filteredAlerts = alerts.filter(alert => {
-                    return (
-                        alert.properties.event === 'Severe Thunderstorm Warning' ||
-                        alert.properties.event === 'Tornado Warning' ||
-                        alert.properties.event === 'Tornado Emergency'
-                    );
-                });
-
-                // Sort alerts by priority (Tornado Emergency > Tornado Warning > Severe Thunderstorm Warning)
-                filteredAlerts.sort((a, b) => {
-                    const priority = {
-                        'Tornado Emergency': 3,
-                        'Tornado Warning': 2,
-                        'Severe Thunderstorm Warning': 1
-                    };
-
-                    return priority[b.properties.event] - priority[a.properties.event];
-                });
-
-                if (filteredAlerts.length > 0) {
-                    alertText = '';
-
-                    // Build the ticker text with different alert styles
-                    filteredAlerts.forEach(alert => {
-                        let alertClass = '';
-                        if (alert.properties.event === 'Severe Thunderstorm Warning') {
-                            alertClass = 'severe-thunderstorm-warning';
-                        } else if (alert.properties.event === 'Tornado Warning') {
-                            alertClass = 'tornado-warning';
-                        } else if (alert.properties.event === 'Tornado Emergency') {
-                            alertClass = 'tornado-emergency';
-                        }
-
-                        alertText += `<span class="alert ${alertClass}">${alert.properties.headline}</span>`;
+                    // Filter for specific alert types (Severe Thunderstorm, Tornado Warnings, Tornado Emergencies)
+                    let filteredAlerts = alerts.filter(alert => {
+                        return (
+                            alert.properties.event === 'Severe Thunderstorm Warning' ||
+                            alert.properties.event === 'Tornado Warning' ||
+                            alert.properties.event === 'Tornado Emergency'
+                        );
                     });
-                }
 
-                // Update the ticker with filtered alerts
-                document.getElementById('ticker').innerHTML = alertText;
-            })
-            .catch(error => {
-                console.error('Error fetching weather alerts:', error);
-                document.getElementById('ticker').textContent = 'Error fetching alerts.';
-            });
+                    // Sort alerts by priority (Tornado Emergency > Tornado Warning > Severe Thunderstorm Warning)
+                    filteredAlerts.sort((a, b) => {
+                        const priority = {
+                            'Tornado Emergency': 3,
+                            'Tornado Warning': 2,
+                            'Severe Thunderstorm Warning': 1
+                        };
+
+                        return priority[b.properties.event] - priority[a.properties.event];
+                    });
+
+                    if (filteredAlerts.length > 0) {
+                        alertText = '';
+
+                        // Build the ticker text with different alert styles
+                        filteredAlerts.forEach(alert => {
+                            let alertClass = '';
+                            if (alert.properties.event === 'Severe Thunderstorm Warning') {
+                                alertClass = 'severe-thunderstorm-warning';
+                            } else if (alert.properties.event === 'Tornado Warning') {
+                                alertClass = 'tornado-warning';
+                            } else if (alert.properties.event === 'Tornado Emergency') {
+                                alertClass = 'tornado-emergency';
+                            }
+
+                            alertText += `<span class="alert ${alertClass}">${alert.properties.headline}</span>`;
+                        });
+                    }
+
+                    // Update the ticker with filtered alerts
+                    document.getElementById('ticker').innerHTML = alertText;
+                })
+                .catch(error => {
+                    console.error('Error fetching weather alerts:', error);
+                    document.getElementById('ticker').textContent = 'Error fetching alerts.';
+                });
+        }
+
+        // Call the function initially to load alerts
+        updateAlerts();
+
+        // Update the alerts every 10 minutes (600,000 milliseconds)
+        setInterval(updateAlerts, 60000); // 1 minute in milliseconds
     </script>
 
 </body>
