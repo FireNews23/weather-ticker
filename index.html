@@ -5,14 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather Ticker</title>
     <style>
+        /* Style the ticker container */
         #ticker-container {
             width: 100%;
+            position: fixed;
+            bottom: 0;
+            left: 0;
             overflow: hidden;
-            background: linear-gradient(90deg, #003366, #0066cc); /* Blue gradient */
+            background: black;
             padding: 10px;
-            border-radius: 10px;
+            z-index: 9999;
         }
 
+        /* General style for the ticker */
         #ticker {
             font-size: 24px;
             font-weight: bold;
@@ -20,17 +25,10 @@
             white-space: nowrap;
             overflow: hidden;
             display: inline-block;
-            min-width: 100%
-            animation: scrollTicker 10s linear infinite;
+            animation: scrollTicker 20s linear infinite; /* Adjust duration as needed */
         }
 
-        .alert {
-            color: red;  /* For severe alerts */
-            font-weight: bold;
-            text-shadow: 0 0 10px red;
-        }
-
-        /* Scrolling animation */
+        /* Ticker scrolling animation */
         @keyframes scrollTicker {
             from {
                 transform: translateX(100%);
@@ -39,9 +37,34 @@
                 transform: translateX(-100%);
             }
         }
+
+        /* Alert styles with different priorities */
+        .alert {
+            padding: 5px;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .severe-thunderstorm-warning {
+            background-color: orange;
+            color: white;
+        }
+
+        .tornado-warning {
+            background-color: red;
+            color: white;
+        }
+
+        .tornado-emergency {
+            background-color: purple;
+            color: white;
+        }
+
     </style>
 </head>
 <body>
+
+    <!-- Ticker container -->
     <div id="ticker-container">
         <div id="ticker">🌤️ Loading weather data...</div>
     </div>
@@ -63,26 +86,43 @@
                     );
                 });
 
-                if (filteredAlerts.length > 0) {
-                    alertText = '⚠️ Severe Alerts: ';
-                    filteredAlerts.forEach(alert => {
-                        alertText += `${alert.properties.headline} | `;
-                    });
+                // Sort alerts by priority (Tornado Emergency > Tornado Warning > Severe Thunderstorm Warning)
+                filteredAlerts.sort((a, b) => {
+                    const priority = {
+                        'Tornado Emergency': 3,
+                        'Tornado Warning': 2,
+                        'Severe Thunderstorm Warning': 1
+                    };
 
-                    // Add alert class to apply special styling
-                    document.getElementById('ticker').classList.add('alert');
-                } else {
-                    // Remove alert class if there are no matching alerts
-                    document.getElementById('ticker').classList.remove('alert');
+                    return priority[b.properties.event] - priority[a.properties.event];
+                });
+
+                if (filteredAlerts.length > 0) {
+                    alertText = '';
+
+                    // Build the ticker text with different alert styles
+                    filteredAlerts.forEach(alert => {
+                        let alertClass = '';
+                        if (alert.properties.event === 'Severe Thunderstorm Warning') {
+                            alertClass = 'severe-thunderstorm-warning';
+                        } else if (alert.properties.event === 'Tornado Warning') {
+                            alertClass = 'tornado-warning';
+                        } else if (alert.properties.event === 'Tornado Emergency') {
+                            alertClass = 'tornado-emergency';
+                        }
+
+                        alertText += `<span class="alert ${alertClass}">${alert.properties.headline}</span>`;
+                    });
                 }
 
                 // Update the ticker with filtered alerts
-                document.getElementById('ticker').textContent = alertText;
+                document.getElementById('ticker').innerHTML = alertText;
             })
             .catch(error => {
                 console.error('Error fetching weather alerts:', error);
                 document.getElementById('ticker').textContent = 'Error fetching alerts.';
             });
     </script>
+
 </body>
 </html>
