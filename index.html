@@ -1,17 +1,31 @@
-async function fetchWeatherAlerts() {
-    const apiUrl = "https://api.weather.gov/alerts/active";
-    try {
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-        
+<script>
+async function fetchWeatherAlerts() { 
+    const apiUrl = "https://api.weather.gov/alerts/active"; 
+    try { 
+        const response = await fetch(apiUrl); 
+        const data = await response.json(); 
+
         // Filter for specific alerts only
         const filteredAlerts = data.features.filter(alert => 
-            alert.properties.event.includes("Tornado Warning") || 
             alert.properties.event.includes("Tornado Emergency") || 
-            alert.properties.event.includes("Severe Thunderstorm Warning") ||
-            alert.properties.event.includes("Flash Flood Warning") ||
-            alert.properties.event.includes("Flash Flood Emergency")
+            alert.properties.event.includes("Flash Flood Emergency") ||
+            alert.properties.event.includes("Tornado Warning") || 
+            alert.properties.event.includes("Flash Flood Warning") || 
+            alert.properties.event.includes("Severe Thunderstorm Warning")
         );
+
+        // Sort by priority: Tornado Emergency > Flash Flood Emergency > Tornado Warning > Flash Flood Warning > Severe Thunderstorm Warning
+        const priorityOrder = {
+            "Tornado Emergency": 1,
+            "Flash Flood Emergency": 2,
+            "Tornado Warning": 3,
+            "Flash Flood Warning": 4,
+            "Severe Thunderstorm Warning": 5
+        };
+
+        filteredAlerts.sort((a, b) => {
+            return (priorityOrder[a.properties.event] || 99) - (priorityOrder[b.properties.event] || 99);
+        });
 
         // Format alerts to show only warning type and affected counties
         const alertsText = filteredAlerts.map(alert => {
@@ -55,3 +69,4 @@ function updateTicker(alerts) {
 // Refresh alerts every 60 seconds
 setInterval(fetchWeatherAlerts, 60000);
 fetchWeatherAlerts();
+</script>
