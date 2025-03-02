@@ -12,6 +12,21 @@
             background-color: transparent; /* Transparent background for the entire page */
         }
 
+        /* Clock Style */
+        #clock {
+            position: fixed;
+            top: 10px;
+            left: 10px; /* Position on the left side */
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.5); /* Slightly transparent black background */
+            padding: 5px 20px;
+            border-radius: 10px;
+            z-index: 10000;
+        }
+
+        /* Ticker Container */
         .ticker-container {
             position: fixed;
             bottom: 0;
@@ -69,6 +84,10 @@
 </head>
 <body>
 
+    <!-- Clock Element -->
+    <div id="clock"></div>
+
+    <!-- Ticker Container -->
     <div class="ticker-container">
         <div class="ticker" id="ticker">Loading...</div>
     </div>
@@ -172,9 +191,26 @@
             setInterval(fetchAlerts, 5 * 60 * 1000); // Update every 5 minutes
         }
 
-        // Start the ticker updates when the page loads
-        window.onload = updateTicker;
+        // Function to update the clock every second
+        function updateClock() {
+            const clockElement = document.getElementById("clock");
 
+            setInterval(() => {
+                const now = new Date();
+                const hours = now.getHours().toString().padStart(2, "0");
+                const minutes = now.getMinutes().toString().padStart(2, "0");
+                const seconds = now.getSeconds().toString().padStart(2, "0");
+
+                const timeString = `${hours}:${minutes}:${seconds}`;
+                clockElement.textContent = timeString;
+            }, 1000);
+        }
+
+        // Start the ticker updates and clock when the page loads
+        window.onload = () => {
+            updateTicker();
+            updateClock();
+        };
     </script>
 
 </body>
