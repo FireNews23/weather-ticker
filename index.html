@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Ticker</title>
+    <title>Weather Alert Ticker</title>
     <style>
         body {
             margin: 0;
@@ -70,7 +70,7 @@
 <body>
 
     <div class="ticker-container">
-        <div class="ticker" id="ticker"></div>
+        <div class="ticker" id="ticker">Loading...</div>
     </div>
 
     <script>
@@ -88,8 +88,19 @@
         async function fetchAlerts() {
             try {
                 const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    console.error("Error fetching data:", response.status, response.statusText);
+                    return;
+                }
                 const data = await response.json();
                 const alerts = data.features;
+
+                // Debugging: Check if alerts are being fetched correctly
+                console.log("Fetched alerts:", alerts);
+
+                if (alerts.length === 0) {
+                    console.log("No active alerts at this time");
+                }
 
                 // Process and display the alerts
                 const alertList = alerts.map(alert => {
@@ -141,6 +152,10 @@
         function displayAlerts(alerts) {
             const ticker = document.getElementById('ticker');
             ticker.innerHTML = ""; // Clear current alerts
+
+            if (alerts.length === 0) {
+                ticker.innerHTML = "No active weather alerts"; // If no alerts, show a message
+            }
 
             alerts.forEach(alert => {
                 const alertElement = document.createElement('div');
