@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather Ticker</title>
     <style>
-        /* Style the ticker container */
+        /* Ticker Container */
         #ticker-container {
             width: 100%;
             position: fixed;
@@ -21,14 +21,14 @@
             z-index: 9999;
         }
 
-        /* Scrolling text */
+        /* Scrolling Text */
         #ticker {
             display: inline-block;
             padding-left: 100%;
             animation: scrollTicker 20s linear infinite;
         }
 
-        /* Smooth scrolling animation */
+        /* Smooth Scrolling Animation */
         @keyframes scrollTicker {
             from {
                 transform: translateX(100%);
@@ -38,7 +38,7 @@
             }
         }
 
-        /* Alert styles */
+        /* Alert Styles */
         .alert {
             padding: 5px 10px;
             border-radius: 5px;
@@ -61,11 +61,21 @@
             color: white;
         }
 
+        .flash-flood-warning {
+            background-color: lightgreen;
+            color: black;
+        }
+
+        .flash-flood-emergency {
+            background-color: darkgreen;
+            color: white;
+        }
+
     </style>
 </head>
 <body>
 
-    <!-- Ticker container -->
+    <!-- Ticker Container -->
     <div id="ticker-container">
         <div id="ticker">🌤️ Waiting for weather updates...</div>
     </div>
@@ -84,17 +94,21 @@
                     // Filter for specific severe alerts
                     let filteredAlerts = alerts.filter(alert => {
                         return (
-                            alert.properties.event === 'Severe Thunderstorm Warning' ||
+                            alert.properties.event === 'Tornado Emergency' ||
+                            alert.properties.event === 'Flash Flood Emergency' ||
                             alert.properties.event === 'Tornado Warning' ||
-                            alert.properties.event === 'Tornado Emergency'
+                            alert.properties.event === 'Flash Flood Warning' ||
+                            alert.properties.event === 'Severe Thunderstorm Warning'
                         );
                     });
 
                     // Sort alerts by priority
                     filteredAlerts.sort((a, b) => {
                         const priority = {
-                            'Tornado Emergency': 3,
-                            'Tornado Warning': 2,
+                            'Tornado Emergency': 5,
+                            'Flash Flood Emergency': 4,
+                            'Tornado Warning': 3,
+                            'Flash Flood Warning': 2,
                             'Severe Thunderstorm Warning': 1
                         };
 
@@ -112,9 +126,17 @@
                                 alertClass = 'tornado-warning';
                             } else if (alert.properties.event === 'Tornado Emergency') {
                                 alertClass = 'tornado-emergency';
+                            } else if (alert.properties.event === 'Flash Flood Warning') {
+                                alertClass = 'flash-flood-warning';
+                            } else if (alert.properties.event === 'Flash Flood Emergency') {
+                                alertClass = 'flash-flood-emergency';
                             }
 
-                            alertText += `<span class="alert ${alertClass}">${alert.properties.headline}</span>`;
+                            // Extract affected counties from the alert area
+                            let affectedAreas = alert.properties.areaDesc || "Unknown Area";
+
+                            // Format the ticker message
+                            alertText += `<span class="alert ${alertClass}">${alert.properties.event} | ${affectedAreas}</span>`;
                         });
                     }
 
