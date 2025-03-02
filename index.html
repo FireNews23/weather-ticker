@@ -11,24 +11,24 @@
             position: fixed;
             bottom: 0;
             left: 0;
-            overflow: hidden;
             background: black;
             padding: 10px;
-            z-index: 9999;
-        }
-
-        /* General style for the ticker */
-        #ticker {
+            overflow: hidden;
+            white-space: nowrap;
             font-size: 24px;
             font-weight: bold;
             color: white;
-            white-space: nowrap;
-            overflow: hidden;
-            display: inline-block;
-            animation: scrollTicker 20s linear infinite; /* Adjust duration as needed */
+            z-index: 9999;
         }
 
-        /* Ticker scrolling animation */
+        /* Scrolling text */
+        #ticker {
+            display: inline-block;
+            padding-left: 100%;
+            animation: scrollTicker 20s linear infinite;
+        }
+
+        /* Smooth scrolling animation */
         @keyframes scrollTicker {
             from {
                 transform: translateX(100%);
@@ -38,16 +38,17 @@
             }
         }
 
-        /* Alert styles with different priorities */
+        /* Alert styles */
         .alert {
-            padding: 5px;
+            padding: 5px 10px;
             border-radius: 5px;
-            margin-right: 10px;
+            margin-right: 15px;
+            display: inline-block;
         }
 
         .severe-thunderstorm-warning {
             background-color: orange;
-            color: white;
+            color: black;
         }
 
         .tornado-warning {
@@ -66,11 +67,11 @@
 
     <!-- Ticker container -->
     <div id="ticker-container">
-        <div id="ticker">🌤️ Loading weather data...</div>
+        <div id="ticker">🌤️ Waiting for weather updates...</div>
     </div>
 
     <script>
-        let lastAlertData = ""; // Stores the last alerts to detect changes
+        let lastAlertData = ""; // Store last alerts to detect changes
 
         // Function to fetch and update weather alerts
         function updateAlerts() {
@@ -80,7 +81,7 @@
                     let alerts = data.features;
                     let alertText = 'No active alerts.';
 
-                    // Filter for specific alert types
+                    // Filter for specific severe alerts
                     let filteredAlerts = alerts.filter(alert => {
                         return (
                             alert.properties.event === 'Severe Thunderstorm Warning' ||
@@ -89,7 +90,7 @@
                         );
                     });
 
-                    // Sort alerts by priority (Tornado Emergency > Tornado Warning > Severe Thunderstorm Warning)
+                    // Sort alerts by priority
                     filteredAlerts.sort((a, b) => {
                         const priority = {
                             'Tornado Emergency': 3,
@@ -117,26 +118,16 @@
                         });
                     }
 
-                    // If the alerts have changed, update the ticker and refresh TikTok Live Studio
+                    // If new alerts appear, update smoothly without refreshing
                     if (alertText !== lastAlertData) {
                         lastAlertData = alertText;
                         document.getElementById('ticker').innerHTML = alertText;
-                        console.log("New alert detected! Refreshing TikTok Live Studio...");
-
-                        // Trick TikTok Live Studio into refreshing
-                        forceTikTokLiveRefresh();
                     }
                 })
                 .catch(error => {
                     console.error('Error fetching weather alerts:', error);
                     document.getElementById('ticker').textContent = 'Error fetching alerts.';
                 });
-        }
-
-        // Function to force TikTok Live Studio to reload
-        function forceTikTokLiveRefresh() {
-            let url = window.location.href;
-            window.location.href = url.includes("?v=") ? url.replace(/v=\d+/, `v=${Date.now()}`) : `${url}?v=${Date.now()}`;
         }
 
         // Check for updates every 60 seconds
