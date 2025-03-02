@@ -1,217 +1,57 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Alert Ticker</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background-color: transparent; /* Transparent background for the entire page */
+async function fetchWeatherAlerts() {
+    const apiUrl = "https://api.weather.gov/alerts/active";
+    try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        
+        // Filter for specific alerts only
+        const filteredAlerts = data.features.filter(alert => 
+            alert.properties.event.includes("Tornado Warning") || 
+            alert.properties.event.includes("Tornado Emergency") || 
+            alert.properties.event.includes("Severe Thunderstorm Warning") ||
+            alert.properties.event.includes("Flash Flood Warning") ||
+            alert.properties.event.includes("Flash Flood Emergency")
+        );
+
+        // Format alerts to show only warning type and affected counties
+        const alertsText = filteredAlerts.map(alert => {
+            const eventType = alert.properties.event; // "Tornado Warning", "Severe Thunderstorm Warning", etc.
+            const affectedAreas = alert.properties.areaDesc; // List of counties
+            return `${eventType}: ${affectedAreas}`;
+        });
+
+        updateTicker(alertsText);
+    } catch (error) {
+        console.error("Error fetching weather alerts:", error);
+    }
+}
+
+function updateTicker(alerts) {
+    const tickerElement = document.getElementById("ticker");
+    tickerElement.innerHTML = ""; // Clear previous alerts
+
+    alerts.forEach(alert => {
+        const alertElement = document.createElement("span");
+        alertElement.classList.add("alert");
+
+        // Assign colors based on priority
+        if (alert.includes("Tornado Emergency")) {
+            alertElement.classList.add("tornado-emergency");
+        } else if (alert.includes("Tornado Warning")) {
+            alertElement.classList.add("tornado-warning");
+        } else if (alert.includes("Flash Flood Emergency")) {
+            alertElement.classList.add("flash-flood-emergency");
+        } else if (alert.includes("Flash Flood Warning")) {
+            alertElement.classList.add("flash-flood-warning");
+        } else if (alert.includes("Severe Thunderstorm Warning")) {
+            alertElement.classList.add("severe-thunderstorm");
         }
 
-        /* Clock Style */
-        #clock {
-            position: fixed;
-            top: 10px;
-            left: 10px; /* Position on the left side */
-            color: white;
-            font-size: 30px;
-            font-weight: bold;
-            background-color: rgba(0, 0, 0, 0.5); /* Slightly transparent black background */
-            padding: 5px 20px;
-            border-radius: 10px;
-            z-index: 10000;
-        }
+        alertElement.textContent = alert;
+        tickerElement.appendChild(alertElement);
+    });
+}
 
-        /* Ticker Container */
-        .ticker-container {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background-color: black; /* Black background only for the ticker */
-            overflow: hidden;
-            z-index: 9999;
-        }
-
-        .ticker {
-            display: flex;
-            flex-wrap: nowrap;
-            animation: ticker-scroll 20s linear infinite;
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            padding: 10px;
-        }
-
-        .alert {
-            margin-right: 40px;
-            padding: 5px 10px;
-            border-radius: 5px;
-        }
-
-        .severe-thunderstorm {
-            background-color: orange;
-        }
-
-        .tornado-warning {
-            background-color: red;
-        }
-
-        .tornado-emergency {
-            background-color: purple;
-        }
-
-        .flash-flood-warning {
-            background-color: lightgreen;
-        }
-
-        .flash-flood-emergency {
-            background-color: darkgreen;
-        }
-
-        @keyframes ticker-scroll {
-            0% {
-                transform: translateX(100%);
-            }
-            100% {
-                transform: translateX(-100%);
-            }
-        }
-    </style>
-</head>
-<body>
-
-    <!-- Clock Element -->
-    <div id="clock"></div>
-
-    <!-- Ticker Container -->
-    <div class="ticker-container">
-        <div class="ticker" id="ticker">Loading...</div>
-    </div>
-
-    <script>
-        const alertPriorities = {
-            "Tornado Emergency": 1,
-            "Flash Flood Emergency": 2,
-            "Tornado Warning": 3,
-            "Flash Flood Warning": 4,
-            "Severe Thunderstorm Warning": 5
-        };
-
-        const apiUrl = "https://api.weather.gov/alerts/active?event=Tornado+Emergency,Tornado+Warning,Flash+Flood+Emergency,Flash+Flood+Warning,Severe+Thunderstorm+Warning";
-
-        // Function to fetch alerts from the National Weather Service API
-        async function fetchAlerts() {
-            try {
-                const response = await fetch(apiUrl);
-                if (!response.ok) {
-                    console.error("Error fetching data:", response.status, response.statusText);
-                    return;
-                }
-                const data = await response.json();
-                const alerts = data.features;
-
-                // Debugging: Check if alerts are being fetched correctly
-                console.log("Fetched alerts:", alerts);
-
-                if (alerts.length === 0) {
-                    console.log("No active alerts at this time");
-                }
-
-                // Process and display the alerts
-                const alertList = alerts.map(alert => {
-                    const description = alert.properties.headline;
-                    const severity = alert.properties.event;
-
-                    // Map the event to its CSS class
-                    const alertClass = getAlertClass(severity);
-                    const counties = alert.properties.areaDesc;
-
-                    return {
-                        severity,
-                        description,
-                        counties,
-                        alertClass,
-                        priority: alertPriorities[severity] || 6
-                    };
-                });
-
-                // Sort alerts by priority (highest priority first)
-                const sortedAlerts = alertList.sort((a, b) => a.priority - b.priority);
-
-                // Update the ticker display
-                displayAlerts(sortedAlerts);
-            } catch (error) {
-                console.error('Error fetching weather alerts:', error);
-            }
-        }
-
-        // Function to determine the CSS class for each alert type
-        function getAlertClass(severity) {
-            switch (severity) {
-                case "Tornado Emergency":
-                    return "tornado-emergency";
-                case "Flash Flood Emergency":
-                    return "flash-flood-emergency";
-                case "Tornado Warning":
-                    return "tornado-warning";
-                case "Flash Flood Warning":
-                    return "flash-flood-warning";
-                case "Severe Thunderstorm Warning":
-                    return "severe-thunderstorm";
-                default:
-                    return "";
-            }
-        }
-
-        // Function to display alerts in the ticker
-        function displayAlerts(alerts) {
-            const ticker = document.getElementById('ticker');
-            ticker.innerHTML = ""; // Clear current alerts
-
-            if (alerts.length === 0) {
-                ticker.innerHTML = "No active weather alerts"; // If no alerts, show a message
-            }
-
-            alerts.forEach(alert => {
-                const alertElement = document.createElement('div');
-                alertElement.classList.add('alert', alert.alertClass);
-                alertElement.innerHTML = `${alert.severity} | ${alert.description} | ${alert.counties}`;
-
-                ticker.appendChild(alertElement);
-            });
-        }
-
-        // Function to update the ticker every 5 minutes
-        function updateTicker() {
-            fetchAlerts();
-            setInterval(fetchAlerts, 5 * 60 * 1000); // Update every 5 minutes
-        }
-
-        // Function to update the clock every second
-        function updateClock() {
-            const clockElement = document.getElementById("clock");
-
-            setInterval(() => {
-                const now = new Date();
-                const hours = now.getHours().toString().padStart(2, "0");
-                const minutes = now.getMinutes().toString().padStart(2, "0");
-                const seconds = now.getSeconds().toString().padStart(2, "0");
-
-                const timeString = `${hours}:${minutes}:${seconds}`;
-                clockElement.textContent = timeString;
-            }, 1000);
-        }
-
-        // Start the ticker updates and clock when the page loads
-        window.onload = () => {
-            updateTicker();
-            updateClock();
-        };
-    </script>
-
-</body>
-</html>
+// Refresh alerts every 60 seconds
+setInterval(fetchWeatherAlerts, 60000);
+fetchWeatherAlerts();
