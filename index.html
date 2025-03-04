@@ -30,7 +30,7 @@
         .ticker {
             display: inline-block;
             white-space: nowrap;
-            animation: scroll 30s linear infinite;
+            animation: scroll 40s linear infinite;
         }
         .alert {
             padding: 5px 15px;
@@ -39,9 +39,7 @@
             font-weight: bold;
         }
         .tornado-emergency { background: purple; color: white; }
-        .flash-flood-emergency { background: darkgreen; color: white; }
         .tornado-warning { background: red; color: white; }
-        .flash-flood-warning { background: lightgreen; color: black; }
         .severe-thunderstorm { background: orange; color: black; }
 
         @keyframes scroll {
@@ -74,19 +72,15 @@
                 // Filter for specific alerts only
                 const filteredAlerts = data.features.filter(alert => 
                     alert.properties.event.includes("Tornado Emergency") || 
-                    alert.properties.event.includes("Flash Flood Emergency") ||
                     alert.properties.event.includes("Tornado Warning") || 
-                    alert.properties.event.includes("Flash Flood Warning") || 
                     alert.properties.event.includes("Severe Thunderstorm Warning")
                 );
 
                 // Sort by priority
                 const priorityOrder = {
                     "Tornado Emergency": 1,
-                    "Flash Flood Emergency": 3,
                     "Tornado Warning": 2,
-                    "Flash Flood Warning": 5,
-                    "Severe Thunderstorm Warning": 4
+                    "Severe Thunderstorm Warning": 3
                 };
 
                 filteredAlerts.sort((a, b) => {
@@ -125,10 +119,6 @@
                     alertElement.classList.add("tornado-emergency");
                 } else if (alert.includes("Tornado Warning")) {
                     alertElement.classList.add("tornado-warning");
-                } else if (alert.includes("Flash Flood Emergency")) {
-                    alertElement.classList.add("flash-flood-emergency");
-                } else if (alert.includes("Flash Flood Warning")) {
-                    alertElement.classList.add("flash-flood-warning");
                 } else if (alert.includes("Severe Thunderstorm Warning")) {
                     alertElement.classList.add("severe-thunderstorm");
                 }
