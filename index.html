@@ -30,7 +30,7 @@
         .ticker {
             display: inline-block;
             white-space: nowrap;
-            animation: scroll 20s linear infinite;
+            animation: scroll 60s linear infinite;
         }
         .alert {
             padding: 5px 15px;
@@ -83,10 +83,10 @@
                 // Sort by priority
                 const priorityOrder = {
                     "Tornado Emergency": 1,
-                    "Flash Flood Emergency": 2,
-                    "Tornado Warning": 3,
-                    "Flash Flood Warning": 4,
-                    "Severe Thunderstorm Warning": 5
+                    "Flash Flood Emergency": 3,
+                    "Tornado Warning": 2,
+                    "Flash Flood Warning": 5,
+                    "Severe Thunderstorm Warning": 4
                 };
 
                 filteredAlerts.sort((a, b) => {
